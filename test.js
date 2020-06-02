@@ -7,10 +7,16 @@ const gfycat = new Gfycat({
 
 // gfycat.getGfycatInfo("repentantequalbillygoat");
 
-console.log("Uploading url to Gfycat...");
-gfycat.uploadFromUrl(
-	"https://file-examples.com/wp-content/uploads/2017/04/file_example_MP4_480_1_5MG.mp4",
-);
+// console.log("Uploading url to Gfycat...");
+// gfycat
+// 	.uploadFromUrl(
+// 		"https://file-examples.com/wp-content/uploads/2017/04/file_example_MP4_480_1_5MG.mp4",
+// 	)
+// 	.then((res) => console.log(res));
 
-// console.log("Fetching empty gfyname...\n");
-// console.log(gfycat.getEmptyGfyname());
+// gfycat.getEmptyGfyname().then((res) => console.log(res));
+
+gfycat
+	.uploadFromFile("llama.gif")
+	.then((res) => console.log(res))
+	.catch((err) => console.log(err));
