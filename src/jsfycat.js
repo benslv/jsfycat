@@ -1,4 +1,5 @@
 const axios = require("axios");
+const fs = require("fs");
 
 class Gfycat {
 	constructor({ clientId, clientSecret }) {
@@ -8,7 +9,7 @@ class Gfycat {
 		this.authenticate();
 	}
 
-	authenticate() {
+	async authenticate() {
 		const endpoint = "https://api.gfycat.com/v1/oauth/token/";
 
 		const params = {
@@ -17,31 +18,25 @@ class Gfycat {
 			client_secret: this.clientSecret,
 		};
 
-		axios
-			.post(endpoint, params)
-			.then((res) => {
-				this.token = res.access_token;
-				this.expiresAt = Date.now() + res.expires_in;
-			})
-			.catch((err) => {
-				console.log(err);
-			});
+		const response = await axios.post(endpoint, params);
+		this.token = response.access_token;
+		this.expiresAt = Date.now() + response.expires_in;
 	}
 
-	checkToken() {
+	async checkToken() {
 		if (this.expiresAt >= Date.now()) {
-			this.authenticate();
+			await this.authenticate();
 		}
 	}
 
 	getGfycatInfo(gfyname) {
 		const endpoint = "https://api.gfycat.com/v1/gfycats/" + gfyname;
 
+		this.checkToken();
+
 		const headers = {
 			Authorization: `Bearer ${this.token}`,
 		};
-
-		this.checkToken();
 
 		axios
 			.get(endpoint, headers)
@@ -62,7 +57,7 @@ class Gfycat {
 		};
 
 		let response = await axios.post(endpoint, params);
-		return await response.data;
+		return response.data;
 	}
 
 	async getEmptyGfyname() {
@@ -73,10 +68,46 @@ class Gfycat {
 		};
 
 		const response = await axios.post(endpoint, headers);
-		return await response.data.gfyname;
+		return response.data.gfyname;
 	}
 
-	uploadFromFile(filepath) {}
+	async uploadFromFile(filepath) {
+		const endpoint = "https://filedrop.gfycat.com/";
+
+		// Check whether the current access token has expired, refreshing it if needs be.
+		await this.checkToken();
+
+		// Include the authorisation token in the request header.
+		const headers = {
+			Authorization: `Bearer ${this.token}`,
+		};
+
+		// Generate an "empty" gfyname for the file to be placed into.
+		const gfyname = await this.getEmptyGfyname();
+
+		// Rename the file to generated gfyname.
+		fs.renameSync(filepath, `./${gfyname}`);
+
+		// Read the contents of the file into a variable for sending.
+		const file = fs.readFileSync(`./${gfyname}`);
+
+		// Make the request.
+		const response = await axios.post(endpoint, headers, file);
+
+		return response;
+	}
+
+	async checkUploadStatus(gfyname) {
+		const endpoint = "https://api.gfycat.com/v1/gfycats/fetch/status/" + gfyname;
+
+		this.checkToken();
+		const headers = {
+			Authorization: `Bearer ${this.token}`,
+		};
+
+		const response = await axios.get(endpoint, headers);
+		return response;
+	}
 }
 
 module.exports = Gfycat;
