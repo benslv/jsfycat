@@ -1,26 +1,26 @@
 const axios = require("axios");
 const fs = require("fs");
+const mime = require("mime");
 
-class Gfycat {
+class GfycatClient {
 	constructor({ clientId, clientSecret }) {
 		this.clientId = clientId;
 		this.clientSecret = clientSecret;
-
-		this.authenticate();
 	}
 
 	async authenticate() {
-		const endpoint = "https://api.gfycat.com/v1/oauth/token/";
+		const res = await axios({
+			method: "POST",
+			url: "https://api.gfycat.com/v1/oauth/token/",
+			data: {
+				grant_type: "client_credentials",
+				client_id: this.clientId,
+				client_secret: this.clientSecret,
+			},
+		});
 
-		const params = {
-			grant_type: "client_credentials",
-			client_id: this.clientId,
-			client_secret: this.clientSecret,
-		};
-
-		const response = await axios.post(endpoint, params);
-		this.token = response.access_token;
-		this.expiresAt = Date.now() + response.expires_in;
+		this.token = res.data.access_token;
+		this.expiresAt = Date.now() + res.data.expires_in;
 	}
 
 	async checkToken() {
@@ -29,85 +29,91 @@ class Gfycat {
 		}
 	}
 
-	getGfycatInfo(gfyname) {
-		const endpoint = "https://api.gfycat.com/v1/gfycats/" + gfyname;
+	async getGfycatInfo(gfyname) {
+		await this.checkToken();
 
-		this.checkToken();
+		const res = await axios({
+			method: "GET",
+			url: `https://api.gfycat.com/v1/gfycats/${gfyname}`,
+			headers: {
+				Authorization: `Bearer ${this.token}`,
+			},
+		});
 
-		const headers = {
-			Authorization: `Bearer ${this.token}`,
-		};
-
-		axios
-			.get(endpoint, headers)
-			.then((res) => {
-				console.log(res.data);
-			})
-			.catch((err) => {
-				console.log(err);
-			});
+		return res.data;
 	}
 
 	async uploadFromUrl(url) {
-		const endpoint = "https://api.gfycat.com/v1/gfycats/";
+		await this.checkToken();
 
-		const params = {
-			fetchUrl: url,
-			noMd5: "true",
-		};
+		const res = await axios({
+			method: "POST",
+			url: "https://api.gfycat.com/v1/gfycats/",
+			headers: {
+				Authorization: `Bearer ${this.token}`,
+			},
+			data: {
+				fetchUrl: url,
+				noMd5: "true",
+			},
+		});
 
-		let response = await axios.post(endpoint, params);
-		return response.data;
+		return res.data;
 	}
 
 	async getEmptyGfyname() {
-		const endpoint = "https://api.gfycat.com/v1/gfycats/";
+		const res = await axios({
+			method: "POST",
+			url: "https://api.gfycat.com/v1/gfycats/",
+			headers: {
+				"Content-Type": "application/json",
+			},
+		});
 
-		const headers = {
-			"Content-Type": "application/json",
-		};
-
-		const response = await axios.post(endpoint, headers);
-		return response.data.gfyname;
+		return res.data.gfyname;
 	}
 
 	async uploadFromFile(filepath) {
-		const endpoint = "https://filedrop.gfycat.com/";
-
-		// Check whether the current access token has expired, refreshing it if needs be.
 		await this.checkToken();
+		console.log(this.token);
 
-		// Include the authorisation token in the request header.
-		const headers = {
-			Authorization: `Bearer ${this.token}`,
-		};
+		const name = await this.getEmptyGfyname();
+		console.log(name);
 
-		// Generate an "empty" gfyname for the file to be placed into.
-		const gfyname = await this.getEmptyGfyname();
+		const stream = fs.createReadStream(filepath);
+		const { size } = fs.statSync(filepath);
+		console.log(size);
+		const type = mime.getType(filepath);
+		console.log(type);
 
-		// Rename the file to generated gfyname.
-		fs.renameSync(filepath, `./${gfyname}`);
+		stream.on("error", console.warn);
 
-		// Read the contents of the file into a variable for sending.
-		const file = fs.readFileSync(`./${gfyname}`);
+		await axios({
+			method: "PUT",
+			url: `https://filedrop.gfycat.com/${name}/`,
+			data: stream,
+			headers: {
+				Authorization: `Bearer ${this.token}`,
+				"Content-Type": type,
+				"Content-Length": size,
+			},
+		});
 
-		// Make the request.
-		const response = await axios.post(endpoint, headers, file);
-
-		return response;
+		return name;
 	}
 
 	async checkUploadStatus(gfyname) {
+		this.checkToken();
+
 		const endpoint = "https://api.gfycat.com/v1/gfycats/fetch/status/" + gfyname;
 
-		this.checkToken();
 		const headers = {
 			Authorization: `Bearer ${this.token}`,
 		};
 
-		const response = await axios.get(endpoint, headers);
-		return response;
+		const res = await axios.get(endpoint, headers);
+		return res.data;
 	}
 }
 
-module.exports = Gfycat;
+module.exports = GfycatClient;
