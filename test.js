@@ -1,22 +1,30 @@
-const Gfycat = require("./src/jsfycat");
+const GfycatClient = require("./src/jsfycat");
 
-const gfycat = new Gfycat({
-	clientId: "2_cBXWlY",
-	clientSecret: "nKn8iYqlRKU5qbl3NxLflHiXV3eFx23IsjpBEHMpZmW7s8aN4oP81vbABFFFEI7J",
-});
+async function main() {
+	const gfycat = new GfycatClient({
+		clientId: "2_cBXWlY",
+		clientSecret: "nKn8iYqlRKU5qbl3NxLflHiXV3eFx23IsjpBEHMpZmW7s8aN4oP81vbABFFFEI7J",
+	});
 
-// gfycat.getGfycatInfo("repentantequalbillygoat");
+	await gfycat.authenticate();
+	console.log("Token", gfycat.token);
 
-// console.log("Uploading url to Gfycat...");
-// gfycat
-// 	.uploadFromUrl(
-// 		"https://file-examples.com/wp-content/uploads/2017/04/file_example_MP4_480_1_5MG.mp4",
-// 	)
-// 	.then((res) => console.log(res));
+	gfyInfo = await gfycat.getGfycatInfo("bruisedcaringjumpingbean");
+	console.log(gfyInfo);
 
-// gfycat.getEmptyGfyname().then((res) => console.log(res));
+	// urlUploadRes = await gfycat.uploadFromUrl(
+	// 	"https://file-examples.com/wp-content/uploads/2017/04/file_example_MP4_480_1_5MG.mp4",
+	// );
 
-gfycat
-	.uploadFromFile("llama.gif")
-	.then((res) => console.log(res))
-	.catch((err) => console.log(err));
+	// console.log("urlUploadRes", urlUploadRes);
+
+	// console.log("urlUploadStatus", await gfycat.checkUploadStatus(urlUploadRes.gfyname));
+
+	fileUploadRes = await gfycat.uploadFromFile("test.mp4");
+
+	console.log(fileUploadRes);
+
+	console.log("fileUploadStatus", await gfycat.checkUploadStatus(fileUploadRes.gfyname));
+}
+
+main();
