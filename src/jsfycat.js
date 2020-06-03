@@ -75,7 +75,6 @@ class GfycatClient {
 
 	async uploadFromFile(filepath) {
 		await this.checkToken();
-		console.log(this.token);
 
 		const name = await this.getEmptyGfyname();
 		console.log(name);
@@ -86,11 +85,11 @@ class GfycatClient {
 		const type = mime.getType(filepath);
 		console.log(type);
 
-		stream.on("error", console.warn);
+		console.log(`https://filedrop.gfycat.com/${name}`);
 
 		await axios({
 			method: "PUT",
-			url: `https://filedrop.gfycat.com/${name}/`,
+			url: `https://filedrop.gfycat.com/${name}`,
 			data: stream,
 			headers: {
 				Authorization: `Bearer ${this.token}`,
