@@ -9,8 +9,8 @@ async function main() {
 	await gfycat.authenticate();
 	console.log("Token", gfycat.token);
 
-	gfyInfo = await gfycat.getGfycatInfo("bruisedcaringjumpingbean");
-	console.log(gfyInfo);
+	// gfyInfo = await gfycat.getGfycatInfo("bruisedcaringjumpingbean");
+	// console.log(gfyInfo);
 
 	// urlUploadRes = await gfycat.uploadFromUrl(
 	// 	"https://file-examples.com/wp-content/uploads/2017/04/file_example_MP4_480_1_5MG.mp4",
