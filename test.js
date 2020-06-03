@@ -22,9 +22,9 @@ async function main() {
 
 	fileUploadRes = await gfycat.uploadFromFile("test.mp4");
 
-	console.log(fileUploadRes);
+	console.log("FileUploadRes", fileUploadRes);
 
-	console.log("fileUploadStatus", await gfycat.checkUploadStatus(fileUploadRes.gfyname));
+	console.log("fileUploadStatus", await gfycat.checkUploadStatus(fileUploadRes));
 }
 
 main();
