@@ -1,12 +1,20 @@
 {
 	"name": "jsfycat",
 	"version": "1.0.0",
-	"description": "A wrapper for Gfycat's API, supporting uploading of remote and local files.",
-	"keywords": ["gfycat","api", "javascript", "node"]
+	"description": "A Node.js wrapper for the Gfycat API using `async/await` functionality.",
+	"keywords": [
+		"gfycat",
+		"api",
+		"javascript",
+		"node"
+	],
 	"main": "src/jsfycat.js",
-	"repository": "git@github.com:silverben10/jsfycat.git",
-	"author": "Ben Silverman <bensilverman10@gmail.com>",
-	"license": "GPL",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/silverben10/jsfycat.git"
+	},
+	"author": "Ben Silverman <bensilverman10@gmail.com> (http://bensilverman.co.uk)",
+	"license": "GPL-3.0",
 	"dependencies": {
 		"axios": "^0.19.2",
 		"mime": "^2.4.6"
