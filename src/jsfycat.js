@@ -46,10 +46,10 @@ class GfycatClient {
 	}
 
 	/**
-	 * Requests and returns a JSON object containing information about a particular gfy.
+	 * Requests and returns a JSON object containing information about a specified gfycat.
 	 * @async
 	 * @method
-	 * @param {string} gfyname - The name of the gfy (e.g. "admirabledaringbluewhale"). Can be found in the URL of the gfy you want information about.
+	 * @param {string} gfyname - The name of the gfycat (e.g. "admirabledaringbluewhale"). Can be found in the URL of the gfycat you want information about.
 	 */
 	async getGfycatInfo(gfyname) {
 		await this.checkToken();
@@ -66,7 +66,7 @@ class GfycatClient {
 	}
 
 	/**
-	 * Uploads and creates a new gfy from a provided URL.
+	 * Uploads and creates a new gfycat from a provided URL.
 	 * @async
 	 * @method
 	 * @param {string} URL - The direct URL of the media you want to upload to Gfycat.
@@ -137,8 +137,8 @@ class GfycatClient {
 	}
 
 	/**
-	 * Requests and returns information about the status of a specified gfy. Mainly used to check whether a gfy has finished encoding after being uploaded.
-	 * @param {string} gfyname - The name of the gfy (e.g. "admirabledaringbluewhale"). Can be found in the URL of the gfy you want information about.
+	 * Requests and returns information about the status of a specified gfycat. Mainly used to check whether a gfycat has finished encoding after being uploaded.
+	 * @param {string} gfyname - The name of the gfycat (e.g. "admirabledaringbluewhale"). Can be found in the URL of the gfycat you want information about.
 	 */
 	async checkUploadStatus(gfyname) {
 		this.checkToken();
