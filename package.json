@@ -2,6 +2,7 @@
 	"name": "jsfycat",
 	"version": "1.0.0",
 	"description": "A wrapper for Gfycat's API, supporting uploading of remote and local files.",
+	"keywords": ["gfycat","api", "javascript", "node"]
 	"main": "src/jsfycat.js",
 	"repository": "git@github.com:silverben10/jsfycat.git",
 	"author": "Ben Silverman <bensilverman10@gmail.com>",
