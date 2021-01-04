@@ -1,22 +1,32 @@
 {
-	"name": "jsfycat",
-	"version": "1.0.1",
-	"description": "A Node.js wrapper for the Gfycat API using `async/await` functionality.",
-	"keywords": [
-		"gfycat",
-		"api",
-		"javascript",
-		"node"
-	],
-	"main": "src/jsfycat.js",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/silverben10/jsfycat.git"
-	},
-	"author": "Ben Silverman <bensilverman10@gmail.com> (http://bensilverman.co.uk)",
-	"license": "GPL-3.0",
-	"dependencies": {
-		"axios": "^0.19.2",
-		"mime": "^2.4.6"
-	}
+  "name": "jsfycat",
+  "version": "1.0.1",
+  "description": "A Node.js wrapper for the Gfycat API using `async/await` functionality.",
+  "keywords": [
+    "gfycat",
+    "api",
+    "javascript",
+    "node"
+  ],
+  "main": "src/jsfycat.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/silverben10/jsfycat.git"
+  },
+  "author": "Ben Silverman <bensilverman10@gmail.com> (http://bensilverman.co.uk)",
+  "license": "GPL-3.0",
+  "scripts": {
+    "lint": "eslint",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "axios": "^0.19.2",
+    "mime": "^2.4.6"
+  },
+  "devDependencies": {
+    "eslint": "^7.17.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1",
+    "prettier": "^2.2.1"
+  }
 }
