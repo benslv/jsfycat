@@ -1,157 +1,171 @@
+"use strict";
+
 const axios = require("axios");
 const fs = require("fs");
 const mime = require("mime");
 
 class GfycatClient {
-	/**
-	 * Creates a new instance of the GfycatClient class.
-	 * @constructor
-	 * @param {string} cliendId - The client ID retrieved from the developer portal.
-	 * @param {string} clientSecret - The client secret retrieve from th developer portal.
-	 */
-	constructor({ clientId, clientSecret }) {
-		this.clientId = clientId;
-		this.clientSecret = clientSecret;
-	}
+  /**
+   * Creates a new instance of the GfycatClient class.
+   * @constructor
+   * @param {string} clientId - The client ID retrieved from the developer portal.
+   * @param {string} clientSecret - The client secret retrieve from th developer portal.
+   */
+  constructor({ clientId, clientSecret }) {
+    this.clientId = clientId;
+    this.clientSecret = clientSecret;
+  }
 
-	/**
-	 * Authenticates the client with the Gfycat API, storing the access token for future requests.
-	 * @async
-	 * @method
-	 */
-	async authenticate() {
-		const res = await axios({
-			method: "POST",
-			url: "https://api.gfycat.com/v1/oauth/token/",
-			data: {
-				grant_type: "client_credentials",
-				client_id: this.clientId,
-				client_secret: this.clientSecret,
-			},
-		});
+  /**
+   * Authenticates the client with the Gfycat API, storing the access token for future requests.
+   * @async
+   * @method
+   */
+  async authenticate() {
+    const res = await axios({
+      method: "POST",
+      url: "https://api.gfycat.com/v1/oauth/token/",
+      data: {
+        grant_type: "client_credentials",
+        client_id: this.clientId,
+        client_secret: this.clientSecret,
+      },
+    });
 
-		this.token = res.data.access_token;
-		this.expiresAt = Date.now() + res.data.expires_in; // Calculate the time at which the token should expire.
-	}
+    this.token = res.data.access_token;
 
-	/**
-	 * Checks if the current access_token has expired, reauthenticating if necessary.
-	 * @async
-	 * @method
-	 */
-	async checkToken() {
-		if (this.expiresAt >= Date.now()) {
-			await this.authenticate();
-		}
-	}
+    // Calculate the time at which the token should expire.
+    this.expiresAt = Date.now() + res.data.expires_in;
+  }
 
-	/**
-	 * Requests and returns a JSON object containing information about a specified gfycat.
-	 * @async
-	 * @method
-	 * @param {string} gfyname - The name of the gfycat (e.g. "admirabledaringbluewhale"). Can be found in the URL of the gfycat you want information about.
-	 */
-	async getGfycatInfo(gfyname) {
-		await this.checkToken();
+  /**
+   * Checks if the current access_token has expired, reauthenticating if necessary.
+   * @async
+   * @method
+   */
+  async checkToken() {
+    if (!this.expiresAt || this.expiresAt >= Date.now()) {
+      await this.authenticate();
+    }
+  }
 
-		const res = await axios({
-			method: "GET",
-			url: `https://api.gfycat.com/v1/gfycats/${gfyname}`,
-			headers: {
-				Authorization: `Bearer ${this.token}`,
-			},
-		});
+  /**
+   * Requests and a JSON object containing information about a specified gfyname.
+   * @async
+   * @method
+   * @param {string} gfyname - The name of the gfycat (e.g. "admirabledaringbluewhale"). Can be found in the URL of the gfycat you want information about.
+   * @return {object} A object containing information about the gfycat.
+   */
+  async getGfycatInfo(gfyname) {
+    await this.checkToken();
 
-		return res.data;
-	}
+    const res = await axios({
+      method: "GET",
+      url: `https://api.gfycat.com/v1/gfycats/${gfyname}`,
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+      },
+    });
 
-	/**
-	 * Uploads and creates a new gfycat from a provided URL.
-	 * @async
-	 * @method
-	 * @param {string} URL - The direct URL of the media you want to upload to Gfycat.
-	 */
-	async uploadFromUrl(URL) {
-		await this.checkToken();
+    return res.data;
+  }
 
-		const res = await axios({
-			method: "POST",
-			url: "https://api.gfycat.com/v1/gfycats/",
-			headers: {
-				Authorization: `Bearer ${this.token}`,
-			},
-			data: {
-				fetchUrl: URL,
-				noMd5: "true", // Setting this to "true" allows duplicate media to be uploaded to Gfycat without being rejected.
-			},
-		});
+  /**
+   * Generates an "empty" gfyname (i.e. there will not be any media at that URL).
+   * @async
+   * @method
+   * @return {string} A randomly-generated gfyname.
+   */
+  async getEmptyGfyname() {
+    const res = await axios({
+      method: "POST",
+      url: "https://api.gfycat.com/v1/gfycats/",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-		return res.data;
-	}
+    return res.data.gfyname;
+  }
 
-	/**
-	 * Generates an "empty" gfyname (i.e. there will not be any media at that URL).
-	 * @async
-	 * @method
-	 */
-	async getEmptyGfyname() {
-		const res = await axios({
-			method: "POST",
-			url: "https://api.gfycat.com/v1/gfycats/",
-			headers: {
-				"Content-Type": "application/json",
-			},
-		});
+  /**
+   * Uploads and creates a new gfycat from a provided URL.
+   * @async
+   * @method
+   * @param {string} URL - The direct URL of the media you want to upload to Gfycat.
+   * @param {string} [title=""] - (Optional) The title you want the gfycat to have.
+   * @param {string} [desc=""] - (Optional) The description for the gfycat.
+   * @param {Array<string>} [tags=[]] - (Optional) Tags to add to the gfycat.
+   * @return {object} An object containing information about the upload.
+   */
+  async uploadFromURL(URL, title = "", desc = "", tags = []) {
+    await this.checkToken();
 
-		return res.data.gfyname;
-	}
+    const res = await axios({
+      method: "POST",
+      url: "https://api.gfycat.com/v1/gfycats/",
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+      },
+      data: {
+        fetchUrl: URL,
+        title: title,
+        noMd5: "true", // Setting this to "true" allows duplicate media to be uploaded to Gfycat without being rejected.
+      },
+    });
 
-	/**
-	 * Uploads a local file to the Gfycat service.
-	 * @async
-	 * @method
-	 * @param {string} filepath - The filepath to the file you want to upload.
-	 */
-	async uploadFromFile(filepath) {
-		await this.checkToken();
+    return res.data;
+  }
 
-		const name = await this.getEmptyGfyname();
+  /**
+   * Uploads a local file to the Gfycat service.
+   * @async
+   * @method
+   * @param {string} filepath - The filepath to the file you want to upload.
+   * @return {object} An object containing information about the upload.
+   */
+  async uploadFromFile(filepath) {
+    await this.checkToken();
 
-		const stream = fs.createReadStream(filepath);
-		const { size } = fs.statSync(filepath);
-		const type = mime.getType(filepath);
+    const name = await this.getEmptyGfyname();
 
-		const res = await axios({
-			method: "PUT",
-			url: `https://filedrop.gfycat.com/${name}`,
-			data: stream,
-			headers: {
-				"Content-Type": type,
-				"Content-Length": size,
-			},
-			maxContentLength: Infinity,
-			maxBodyLength: Infinity,
-		});
+    const stream = fs.createReadStream(filepath);
+    const { size } = fs.statSync(filepath);
+    const type = mime.getType(filepath);
 
-		return res.data;
-	}
+    const res = await axios({
+      method: "PUT",
+      url: `https://filedrop.gfycat.com/${name}`,
+      data: stream,
+      headers: {
+        "Content-Type": type,
+        "Content-Length": size,
+      },
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
+    });
 
-	/**
-	 * Requests and returns information about the status of a specified gfycat. Mainly used to check whether a gfycat has finished encoding after being uploaded.
-	 * @param {string} gfyname - The name of the gfycat (e.g. "admirabledaringbluewhale"). Can be found in the URL of the gfycat you want information about.
-	 */
-	async checkUploadStatus(gfyname) {
-		this.checkToken();
+    return res.data;
+  }
 
-		const endpoint = "https://api.gfycat.com/v1/gfycats/fetch/status/" + gfyname;
+  /**
+   * Requests and returns information about the status of a specified gfycat. Mainly used to check whether a gfycat has finished encoding after being uploaded.
+   * @param {string} gfyname - The name of the gfycat (e.g. "admirabledaringbluewhale"). Can be found in the URL of the gfycat you want information about.
+   * @return {object} An object containing information about the upload.
+   */
+  async checkUploadStatus(gfyname) {
+    this.checkToken();
 
-		const headers = {
-			Authorization: `Bearer ${this.token}`,
-		};
+    const endpoint =
+      "https://api.gfycat.com/v1/gfycats/fetch/status/" + gfyname;
 
-		const res = await axios.get(endpoint, headers);
-		return res.data;
-	}
+    const headers = {
+      Authorization: `Bearer ${this.token}`,
+    };
+
+    const res = await axios.get(endpoint, headers);
+    return res.data;
+  }
 }
 
 module.exports = GfycatClient;
