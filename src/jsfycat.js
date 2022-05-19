@@ -110,7 +110,9 @@ class GfycatClient {
       data: {
         fetchUrl: URL,
         title: title,
-        noMd5: "true", // Setting this to "true" allows duplicate media to be uploaded to Gfycat without being rejected.
+        desc: desc,
+        tags: tags,
+        noMd5: "true", // Allow duplicate media to be uploaded to Gfycat without being rejected.
       },
     });
 
