@@ -1,8 +1,8 @@
 "use strict";
 
-const axios = require("axios");
-const fs = require("fs");
-const mime = require("mime");
+import axios from "axios";
+import fs from "fs";
+import mime from "mime";
 
 class GfycatClient {
   /**
@@ -11,9 +11,25 @@ class GfycatClient {
    * @param {string} clientId - The client ID retrieved from the developer portal.
    * @param {string} clientSecret - The client secret retrieve from th developer portal.
    */
-  constructor({ clientId, clientSecret }) {
+
+  clientId: string;
+  clientSecret: string;
+
+  token: string;
+  expiresAt: number;
+
+  constructor({
+    clientId,
+    clientSecret,
+  }: {
+    clientId: string;
+    clientSecret: string;
+  }) {
     this.clientId = clientId;
     this.clientSecret = clientSecret;
+
+    this.token = "";
+    this.expiresAt = 0;
   }
 
   /**
@@ -56,7 +72,7 @@ class GfycatClient {
    * @param {string} gfyname - The name of the gfycat (e.g. "admirabledaringbluewhale"). Can be found in the URL of the gfycat you want information about.
    * @return {object} A object containing information about the gfycat.
    */
-  async getGfycatInfo(gfyname) {
+  async getGfycatInfo(gfyname: string): Promise<object> {
     await this.checkToken();
 
     const res = await axios({
@@ -76,7 +92,7 @@ class GfycatClient {
    * @method
    * @return {string} A randomly-generated gfyname.
    */
-  async getEmptyGfyname() {
+  async getEmptyGfyname(): Promise<string> {
     const res = await axios({
       method: "POST",
       url: "https://api.gfycat.com/v1/gfycats/",
@@ -98,7 +114,7 @@ class GfycatClient {
    * @param {Array<string>} [tags=[]] - (Optional) Tags to add to the gfycat.
    * @return {object} An object containing information about the upload.
    */
-  async uploadFromURL(URL, title = "", desc = "", tags = []) {
+  async uploadFromURL(URL: string, title = "", desc = "", tags = []) {
     await this.checkToken();
 
     const res = await axios({
@@ -126,7 +142,7 @@ class GfycatClient {
    * @param {string} filepath - The filepath to the file you want to upload.
    * @return {object} An object containing information about the upload.
    */
-  async uploadFromFile(filepath) {
+  async uploadFromFile(filepath: string) {
     await this.checkToken();
 
     const name = await this.getEmptyGfyname();
@@ -155,7 +171,7 @@ class GfycatClient {
    * @param {string} gfyname - The name of the gfycat (e.g. "admirabledaringbluewhale"). Can be found in the URL of the gfycat you want information about.
    * @return {object} An object containing information about the upload.
    */
-  async checkUploadStatus(gfyname) {
+  async checkUploadStatus(gfyname: string) {
     this.checkToken();
 
     const endpoint =
