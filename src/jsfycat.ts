@@ -4,7 +4,7 @@ import axios from "axios";
 import fs from "fs";
 import mime from "mime";
 
-class GfycatClient {
+export default class GfycatClient {
   /**
    * Creates a new instance of the GfycatClient class.
    * @constructor
@@ -151,6 +151,7 @@ class GfycatClient {
     const { size } = fs.statSync(filepath);
     const type = mime.getType(filepath);
 
+    // @ts-ignore
     const res = await axios({
       method: "PUT",
       url: `https://filedrop.gfycat.com/${name}`,
@@ -181,9 +182,8 @@ class GfycatClient {
       Authorization: `Bearer ${this.token}`,
     };
 
+    // @ts-ignore
     const res = await axios.get(endpoint, headers);
     return res.data;
   }
 }
-
-module.exports = GfycatClient;
